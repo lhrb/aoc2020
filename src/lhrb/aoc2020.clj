@@ -22,7 +22,7 @@
   (f (c/combinations nums 3)) )
 
 (comment
-  ;; day
+  ;; day 2
   (require '[instaparse.core :as insta] )
 
   (def grammar
@@ -72,3 +72,37 @@
        count)
 
   )
+
+(comment
+  ;; day 3
+
+  (def m
+    (->>
+     (str/split-lines (slurp "resources/day3"))
+     (map #(str/split % #""))))
+
+  (defn trees [m right down]
+    (let [height (count m)
+          width (count (first m))
+          y (range 0 height down)
+          x (->> (range 0 (* right height) right)
+                 (map #(mod % width)))
+          coords  (map vector y x)]
+      coords
+      (->> coords
+           (map #(let [[x y] %]
+                   (-> m
+                       (nth x)
+                       (nth y))))
+           (filter #(= % "#"))
+           count)))
+
+  ;; riddle 1
+  (trees m 3 1)
+
+  ;; riddle 2
+
+  (->> [[1 1] [3 1] [5 1] [7 1] [1 2]]
+       (map #(let [[r d] %] (trees m r d)))
+       (apply *))
+)
