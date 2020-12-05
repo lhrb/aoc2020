@@ -106,3 +106,54 @@
        (map #(let [[r d] %] (trees m r d)))
        (apply *))
 )
+
+(comment
+  ;; day 4
+
+  (require '[instaparse.core :as insta])
+  (require '[clojure.spec.alpha :as s])
+
+  (def grammar
+    (insta/parser
+     "pp = (entry <separator?>)+
+      entry = field <separator> data
+      field = #'[a-z]{3}'
+      data = #'[a-zA-Z0-9#]*'
+      separator = ':' | ' '"))
+
+  (def passports
+    (->> (slurp "resources/day4")
+         (str/split-lines)
+         (partition-by empty?)
+         (remove #(empty? (first %)))
+         (map #(reduce (fn [acc e] (str acc " " e)) %))
+         (map #(grammar %))
+         (map #(->> %
+                    rest
+                    (reduce (fn [acc [_ [_ key] [_ data]]]
+                              (assoc acc (keyword key) data))
+                            {})))))
+
+ ; riddle 1
+  (s/def ::passport (s/keys :req-un [::byr ::iyr ::eyr ::hgt ::hcl ::ecl ::pid]
+                            :opt-un [::cid]))
+
+  (->>
+   passports
+   (filter #(s/valid? ::passport %))
+   count)
+
+  ; riddle 2
+  (s/def ::byr #(re-matches #"19[2-9][0-9]|200[0-2]" %))
+  (s/def ::iyr #(re-matches #"201[0-9]|2020" %))
+  (s/def ::eyr #(re-matches #"20(2[0-9]|30)" %))
+  (s/def ::hgt #(re-matches #"1([5-8][0-9]|9[0-3])cm|(59|6[0-9]|7[0-6])in" %))
+  (s/def ::hcl #(re-matches #"#[0-9a-f]{6}" %))
+  (s/def ::ecl #{"amb" "blu" "brn" "gry" "grn" "hzl" "oth"})
+  (s/def ::pid #(re-matches #"[0-9]{9}" %))
+
+  (->>
+   passports
+   (filter #(s/valid? ::passport %))
+   count)
+  )
