@@ -157,3 +157,51 @@
    (filter #(s/valid? ::passport %))
    count)
   )
+
+(comment
+  ;; day 5
+  (require '[clojure.math.numeric-tower :as math])
+
+  (def seats (-> (slurp "resources/day5")
+                 (str/split-lines)))
+
+  (defn search [interval sequence signal]
+    (loop [[s e] interval
+           rows sequence]
+      (if (empty? rows)
+        s
+        (let [m (math/floor (/ (+ s e) 2))]
+          (recur
+           (if (= (first rows) signal)
+             [s m]
+             [(+ m 1) e])
+           (rest rows))))))
+
+  (defn seat-id [in]
+    (let [s (->> (str/split in #"") (split-at 7))
+          row (search [0 127] (first s) "F")
+          col (search [0 7] (second s) "L")]
+      (+ (* row 8) col)))
+
+  ;; riddle 1
+  (->> seats
+       (map seat-id)
+       (reduce max))
+
+
+  ;; riddle 2
+  (defn find-seat [sorted-ids]
+    (->> (map vector
+              (rest sorted-ids)
+              (butlast sorted-ids))
+         (filter #(= 2 (apply - %)))
+         first
+         second
+         inc))
+
+  (->> seats
+       (map seat-id)
+       sort
+       find-seat)
+
+  )
