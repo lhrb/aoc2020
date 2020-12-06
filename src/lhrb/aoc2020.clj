@@ -1,6 +1,7 @@
 (ns lhrb.aoc2020
   (:gen-class)
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.set :as set]))
 
 (comment
   ;; day 1
@@ -204,4 +205,25 @@
        sort
        find-seat)
 
+  )
+
+(comment
+  ;; day 6
+  (def ans
+    (-> (slurp "resources/day6")
+        (str/split #"\R\R")))
+
+  (defn yes-ans [f]
+    (comp
+     (map #(str/split % #"\R"))
+     (map (fn [e] (map #(str/split % #"") e)))
+     (map #(map set %))
+     (map #(apply f %))
+     (map count)))
+
+  ;; riddle 1
+  (transduce (yes-ans set/union) + ans)
+
+  ;; riddle 2
+  (transduce (yes-ans set/intersection) + ans)
   )
